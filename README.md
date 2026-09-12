@@ -30,7 +30,7 @@ sudo ./nettoyage.sh --tout
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/OOJessOO/CLI_LINUX.git
+git clone https://github.com/OOJessOO/CLI-LINUX.git
 cd CLI_LINUX
 chmod +x nettoyage.sh
 ```
