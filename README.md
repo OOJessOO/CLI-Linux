@@ -1,21 +1,26 @@
 # 🧹 Nettoyage Linux
 
-Script bash de nettoyage du système Linux (Debian / Ubuntu et familles `apt` + `systemd`).
+Script bash de nettoyage du système Linux, compatible **multi-distributions** (`apt`, `dnf`, `pacman`, `apk`, `zypper`).
 
-Il supprime les fichiers inutiles pour libérer de l'espace disque :
+Il libère de l'espace disque en nettoyant :
 
-- **Paquets apt** : `clean`, `autoremove --purge`, régénération de la liste des paquets
-- **Journaux système** : `journalctl` — purges des journaux de plus de 7 jours
+- **Paquets du système** : cache + paquets orphelins (`apt clean` / `autoremove`, `dnf clean`, `paccache`, etc.)
+- **Snap** : révisions désactivées *(si `snap` est installé)*
+- **Flatpak** : runtimes inutilisés *(si `flatpak` est installé)*
+- **Docker** : images, conteneurs et cache de build inutilisés *(si docker est lancé)*
+- **Journaux système** : `journalctl` (> 7 jours) ou, sans systemd, logs `/var/log` (> 30 jours)
 - **Fichiers temporaires** : `/tmp`, `/var/tmp`, miniatures (thumbnails) et caches utilisateur (> 30 jours)
-- **Corbeille** : `~/.local/share/Trash`
+- **Corbeille** : `~/.local/share/Trash` + fichiers personnels inactifs dans `/tmp`
+
+L'**espace libéré** sur `/` est mesuré avant/après et affiché en fin de script.
 
 ## ⚙️ Prérequis
 
-- Linux avec **Debian / Ubuntu** (ou dérivé `apt`)
-- **systemd** (pour le nettoyage des journaux)
-- Outils de base : `bash`, `apt-get`, `journalctl`
+- Bash 4+ (présent par défaut sur toutes les distributions modernes)
+- Droits `sudo` pour les étapes système (paquets, journaux, snap)
+- Outils optionnels utilisés **uniquement si installés** : `snap`, `flatpak`, `docker`, `numfmt`
 
-> ⚠️ Les parties `apt` et `journalctl` nécessitent les droits **root** (`sudo`).
+> 💡 Le détection du gestionnaire de paquets est automatique (`apt-get` / `dnf` / `pacman` / `apk` / `zypper`).
 
 ## 🚀 Utilisation
 
@@ -23,9 +28,15 @@ Il supprime les fichiers inutiles pour libérer de l'espace disque :
 # Mode interactif (confirmation avant chaque étape)
 ./nettoyage.sh
 
-# Nettoyage automatique complet (sans questions)
+# Nettoyage automatique complet (sans questions) — sudo requis
 sudo ./nettoyage.sh --tout
+
+# Aide
+./nettoyage.sh --aide
 ```
+
+> ⚠️ Les étapes liées aux **caches et à la corbeille de l'utilisateur** s'appliquent à la valeur de `$HOME`.
+> Utilisez `sudo` uniquement pour le nettoyage système, ou le script agira sur le compte `root`.
 
 ## 📦 Installation
 
@@ -35,20 +46,20 @@ cd CLI-LINUX
 chmod +x nettoyage.sh
 ```
 
-*(Alias recommandé dans `~/.bashrc` : `alias nettoyage="sudo ~/nettoyage-linux/nettoyage.sh --tout"`)*
+*(Alias recommandé dans `~/.bashrc` : `alias nettoyage="sudo ~/cli-linux/nettoyage.sh --tout"`)*
 
 ## 🗺️ Compatibilité
 
-| Distribution       | apt | journalctl | temp / corbeille |
-|--------------------|:---:|:----------:|:----------------:|
-| Debian / Ubuntu    | ✅  | ✅         | ✅               |
-| Fedora / RHEL      | ❌  | ✅         | ✅               |
-| Arch / Manjaro     | ❌  | ✅         | ✅               |
-| Alpine (OpenRC)    | ❌  | ❌         | ✅               |
+| Gestionnaire  | Distributions (ex.)     | Paquets | Journaux | temp / corbeille |
+|---------------|-------------------------|:-------:|:--------:|:----------------:|
+| `apt`         | Debian, Ubuntu, Mint    | ✅      | ✅       | ✅               |
+| `dnf`         | Fedora, RHEL, Rocky     | ✅      | ✅       | ✅               |
+| `pacman`      | Arch, Manjaro, Endeavour| ✅      | ✅       | ✅               |
+| `apk`         | Alpine                  | ✅      | ⚠️ logs fallback | ✅        |
+| `zypper`      | openSUSE                | ✅      | ✅       | ✅               |
 
-Sur les distributions non `apt`, seul le nettoyage des paquets est ignoré ; les autres étapes restent fonctionnelles (en mode interactif, elles vous seront proposées).
-
-Les journaux d'erreurs (`ERREUR`) ne bloquent pas le script : chaque étape s'exécute de façon indépendante.
+- **Journaux système** : `journalctl` si systemd, sinon purge des fichiers `*.log*` de `/var/log` plus anciens que 30 jours.
+- Chaque étape est **indépendante** : une étape en échec ne bloque jamais les suivantes.
 
 ## 📄 Licence
 
