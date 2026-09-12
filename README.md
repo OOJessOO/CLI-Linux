@@ -31,7 +31,7 @@ sudo ./nettoyage.sh --tout
 
 ```bash
 git clone https://github.com/OOJessOO/CLI-LINUX.git
-cd CLI_LINUX
+cd CLI-LINUX
 chmod +x nettoyage.sh
 ```
 
